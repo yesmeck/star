@@ -73,7 +73,7 @@ while downloaded_song.count < download_count.to_i
   request(cookie).each do |song|
     if !downloaded_song.include?(song.sid)
       puts "Downloading 《#{song.title} - #{song.artist}》..."
-      song.path = "#{DOWNLOAD_DIR}/#{song.title}.mp3";
+      song.path = "#{DOWNLOAD_DIR}/#{song.title.gsub(/\//, '|')}.mp3";
       download song
       downloaded_song << song.sid
     end
