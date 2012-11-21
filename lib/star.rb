@@ -75,7 +75,7 @@ module Star
       }
     end
 
-    cookie = CGI::Cookie::parse(res.env[:response_headers]["set-cookie"])
+    cookie = CGI::Cookie::parse(res.headers["set-cookie"])
     {
       "dbcl2" => cookie["dbcl2"][0].gsub!(/\"/, "").gsub(/ /, "+")
     }
