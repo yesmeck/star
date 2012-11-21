@@ -1,7 +1,20 @@
 # Star
 
-下载豆瓣红心歌曲
+它**可以**帮你随机下载电台的红心歌曲，并且自动填上 ID3 信息。
+它**不可以**帮你导出所有的红心歌曲。
+我自己用它来更新 mp3 里的歌。
 
-## Requirement
+## 依赖
 
+* ruby 1.9.2+
 * taglib
+
+## 安装使用
+
+```
+git clone git://github.com/yesmeck/star.git
+cd star
+bundle install
+ruby -I lib bin/star.rb
+```
+
