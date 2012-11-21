@@ -3,11 +3,20 @@
 require "faraday_middleware"
 require "taglib"
 require "cgi/cookie"
+require "star/song"
 
-module Star
-  PLAYLIST_URL = "http://douban.fm/j/mine/playlist"
+class Star
+  def self.full_url(path)
+    path.sub!(/^\//, "")
+    "http://douban.fm/#{path}"
+  end
 
-  def self.connection(url, parse = false)
+  def self.connection(path, parse = false)
+    if path.start_with?("http")
+      url = path
+    else
+      url = Star.full_url(path)
+    end
     Faraday.new url do |conn|
       conn.request :url_encoded
       if parse
@@ -18,13 +27,13 @@ module Star
     end
   end
 
-  def self.request(cookies)
+  def songs()
     cookie = []
-    cookies.each do |key, value|
+    @cookie.each do |key, value|
       cookie << "#{key}=\"#{value}\""
     end
 
-    res = self.connection(PLAYLIST_URL, true).get do |req|
+    res = Star.connection("/j/mine/playlist", true).get do |req|
       req.headers['Cookie'] = cookie.join("; ")
       req.params = {
         :type => "s",
@@ -36,49 +45,67 @@ module Star
       }
     end
 
-    res.body.song
-  end
+    songs = []
 
-  def self.download(song)
-    res = self.connection(song.url).get
-    File.open(song.path, "wb") do |f|
-      f.write(res.body)
+    res.body.song.each do |song|
+      star_song = Star::Song.new(
+        :sid => song.sid,
+        :year => song.public_time,
+        :album => song.albumtitle,
+        :title => song.title,
+        :artist => song.artist,
+        :url => song.url
+      )
+      songs << star_song
     end
-    self.write_tags(song)
+
+    songs
   end
 
-  def self.write_tags(song)
-    TagLib::FileRef.open(song.path) do |fileref|
-      fileref.tag.title = song.title
-      fileref.tag.artist = song.artist
-      fileref.tag.album = song.albumtitle
-      fileref.tag.year = song.public_time.to_i
-      fileref.save
-    end
+  def captcha
+    res = Star.connection("/j/new_captcha").get
+    @captcha_id = res.body.gsub!('"', '')
+    Star.full_url("/misc/captcha?size=m&id=#{@captcha_id}")
   end
 
-  def self.captcha
-    res = connection("http://douban.fm/j/new_captcha").get
-    $captcha_id = res.body.gsub!('"', '')
-    "http://douban.fm/misc/captcha?size=m&id=#{$captcha_id}"
-  end
+  def login(username, password, captcha)
+    # reset login error
+    @login_error = nil
 
-  def self.login(username, password, captcha)
-    res = connection("http://douban.fm/j/login").post do |req|
+    res = Star.connection("/j/login", true).post do |req|
       req.body = {
         :source => "radio",
         :alias => username,
         :form_password => password,
         :captcha_solution => captcha,
-        :captcha_id => $captcha_id,
+        :captcha_id => @captcha_id,
         :task => "sync_channel_list"
       }
     end
 
-    cookie = CGI::Cookie::parse(res.headers["set-cookie"])
-    {
+    if !res.body.err_msg.nil?
+      @login_error = res.body.err_msg
+      return false
+    end
+
+    set_cookie(res.headers["set-cookie"])
+
+    true
+  end
+
+  def set_cookie(cookie)
+    cookie = CGI::Cookie::parse(cookie)
+    @cookie = {
       "dbcl2" => cookie["dbcl2"][0].gsub!(/\"/, "").gsub(/ /, "+")
     }
+  end
+
+  def login_error
+    @login_error
+  end
+
+  def download_path=(path)
+    @download_path = path
   end
 end
 
