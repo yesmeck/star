@@ -7,19 +7,24 @@ require "star"
 
 star = Star.new
 
-puts "Username:"
-username = gets.chomp
-puts "Password:"
-password = gets.chomp
-puts "Captcha:"
-puts star.captcha
-captcha = gets.chomp
+begin
+  if !star.login_error.nil?
+    puts star.login_error
+  end
+  puts "Username:"
+  username = gets.chomp
+  puts "Password:"
+  password = gets.chomp
+  puts "Captcha:"
+  puts star.captcha
+  captcha = gets.chomp
+end while not star.login(username, password, captcha)
+
 puts "How many songs do you want?"
 @download_count = gets.chomp
 puts "Download to?"
 save_path = gets.chomp
 
-star.login(username, password, captcha)
 
 
 def download_enough?
