@@ -8,15 +8,17 @@ DOWNLOAD_DIR = "/home/meck/Music/star"
 downloaded_song = []
 cookie = {}
 
-puts "Input cookie:"
-puts "dbcl2:"
-cookie["dbcl2"] = gets.chomp
-puts "bid:"
-cookie["bid"] = gets.chomp
+puts "Username:"
+username = gets.chomp
+puts "Password:"
+password = gets.chomp
+puts "Captcha:"
+puts Star.captcha
+captcha = gets.chomp
 puts "How many songs do you want?"
 download_count = gets.chomp
 
-
+cookie = Star.login(username, password, captcha)
 while downloaded_song.count < download_count.to_i
   Star.request(cookie).each do |song|
     if !downloaded_song.include?(song.sid)

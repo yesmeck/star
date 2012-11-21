@@ -2,6 +2,7 @@
 
 require "faraday_middleware"
 require "taglib"
+require "cgi/cookie"
 
 module Star
   PLAYLIST_URL = "http://douban.fm/j/mine/playlist"
@@ -54,6 +55,30 @@ module Star
       fileref.tag.year = song.public_time.to_i
       fileref.save
     end
+  end
+
+  def self.captcha
+    res = connection("http://douban.fm/j/new_captcha").get
+    $captcha_id = res.body.gsub!('"', '')
+    "http://douban.fm/misc/captcha?size=m&id=#{$captcha_id}"
+  end
+
+  def self.login(username, password, captcha)
+    res = connection("http://douban.fm/j/login").post do |req|
+      req.body = {
+        :source => "radio",
+        :alias => username,
+        :form_password => password,
+        :captcha_solution => captcha,
+        :captcha_id => $captcha_id,
+        :task => "sync_channel_list"
+      }
+    end
+
+    cookie = CGI::Cookie::parse(res.env[:response_headers]["set-cookie"])
+    {
+      "dbcl2" => cookie["dbcl2"][0].gsub!(/\"/, "").gsub(/ /, "+")
+    }
   end
 end
 
