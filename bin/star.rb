@@ -1,7 +1,11 @@
 #!/usr/bin/env ruby
 # encoding: utf-8
 
+lib = File.expand_path(File.dirname(__FILE__) + '/../lib')
+$LOAD_PATH.unshift(lib) if File.directory?(lib) && !$LOAD_PATH.include?(lib)
+
 require "star"
+require "highline/import"
 
 @downloaded_song = []
 
@@ -11,21 +15,14 @@ begin
   if !star.login_error.nil?
     puts star.login_error
   end
-  puts "Username:"
-  username = gets.chomp
-  puts "Password:"
-  password = gets.chomp
-  puts "Captcha:"
+  username = ask("Username: ")
+  password = ask("Password: ") { |q| q.echo = "x" }
   puts star.captcha
-  captcha = gets.chomp
+  captcha = ask("Captcha: ")
 end while not star.login(username, password, captcha)
 
-puts "How many songs do you want?"
-@download_count = gets.chomp
-puts "Download to?"
-save_path = gets.chomp
-
-
+@download_count = ask("How many songs do you want? ")
+save_path = ask("Download to? ")
 
 def download_enough?
   @downloaded_song.count >= @download_count.to_i
