@@ -17,6 +17,6 @@
 $ git clone git://github.com/yesmeck/star.git
 $ cd star
 $ bundle install
-$ ruby -I lib bin/star.rb
+$ ruby bin/star.rb
 ```
 
