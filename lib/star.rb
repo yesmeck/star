@@ -103,9 +103,5 @@ class Star
   def login_error
     @login_error
   end
-
-  def download_path=(path)
-    @download_path = path
-  end
 end
 
