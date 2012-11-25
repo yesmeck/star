@@ -9,26 +9,26 @@ $downloaded_song = []
 
 star = Star.new
 
-Shoes.app :width => 320 do
+Shoes.app :title => "Star", :width => 320 do
 
   stack :margin => 10 do
 
     stack :margin => 10 do
       para "Username:"
-      username = edit_line
+      @username = edit_line
     end
 
     stack :margin => 10 do
       para "Password:"
-      password = edit_line :secret => true
+      @password = edit_line :secret => true
     end
 
     stack :margin => 10 do
       para "Captcha:"
-      stack :margin_bottom => 10 do
+      @image_stack = stack :margin_bottom => 10 do
         image download_captcha(star.captcha)
       end
-      captcha = para = edit_line
+      @captcha = para = edit_line
     end
 
     stack :margin => 10 do
@@ -44,9 +44,12 @@ Shoes.app :width => 320 do
 
     stack :margin => 10 do
       button "Login" do
-        login = star.login(username.text, password.text, captcha.text)
+        login = star.login(@username.text, @password.text, @captcha.text)
         if !login
-          p star.login_error
+          alert(star.login_error)
+          @image_stack.clear do
+            image download_captcha(star.captcha)
+          end
         end
         while !download_enough?
           star.songs.each do |song|
@@ -67,7 +70,7 @@ Shoes.app :width => 320 do
 end
 
 def download_captcha(url)
-  tmp_file = "/tmp/star-captcha.jpg"
+  tmp_file = "/tmp/star-captcha-#{Time.now.to_i}.jpg"
   res = Star.connection(url).get
   File.open(tmp_file, "wb") do |f|
     f.write res.body
