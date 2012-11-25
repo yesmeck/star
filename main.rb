@@ -14,7 +14,7 @@ Shoes.app do
     para "Username:"
     username = edit_line
     para "Password:"
-    password = edit_line
+    password = edit_line :secret => true
     para "Captcha:"
     image download_captcha(star.captcha)
     captcha = para = edit_line
