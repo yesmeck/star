@@ -20,8 +20,9 @@ Shoes.app do
     captcha = para = edit_line
     para "How many songs do you want?"
     $download_count = edit_line
-    para = "Download to?"
-    save_path = edit_line
+    button "Save to...." do
+      @save_path = ask_open_folder
+    end
 
     button "Login" do
       login = star.login(username.text, password.text, captcha.text)
@@ -32,7 +33,7 @@ Shoes.app do
         star.songs.each do |song|
           if !$downloaded_song.include?(song.sid) && !download_enough?
             puts "Downloading 《#{song.title} - #{song.artist}》..."
-            song.save_to(save_path.text)
+            song.save_to(@save_path)
             $downloaded_song << song.sid
           end
         end
