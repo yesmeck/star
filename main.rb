@@ -9,39 +9,61 @@ $downloaded_song = []
 
 star = Star.new
 
-Shoes.app do
-  stack do
-    para "Username:"
-    username = edit_line
-    para "Password:"
-    password = edit_line :secret => true
-    para "Captcha:"
-    image download_captcha(star.captcha)
-    captcha = para = edit_line
-    para "How many songs do you want?"
-    $download_count = edit_line
-    button "Save to...." do
-      @save_path = ask_open_folder
+Shoes.app :width => 320 do
+
+  stack :margin => 10 do
+
+    stack :margin => 10 do
+      para "Username:"
+      username = edit_line
     end
 
-    button "Login" do
-      login = star.login(username.text, password.text, captcha.text)
-      if !login
-        p star.login_error
+    stack :margin => 10 do
+      para "Password:"
+      password = edit_line :secret => true
+    end
+
+    stack :margin => 10 do
+      para "Captcha:"
+      stack :margin_bottom => 10 do
+        image download_captcha(star.captcha)
       end
-      while !download_enough?
-        star.songs.each do |song|
-          if !$downloaded_song.include?(song.sid) && !download_enough?
-            puts "Downloading 《#{song.title} - #{song.artist}》..."
-            song.save_to(@save_path)
-            $downloaded_song << song.sid
+      captcha = para = edit_line
+    end
+
+    stack :margin => 10 do
+      para "How many songs do you want?"
+      $download_count = edit_line
+    end
+
+    stack :margin => 10 do
+      button "Save to...." do
+        @save_path = ask_open_folder
+      end
+    end
+
+    stack :margin => 10 do
+      button "Login" do
+        login = star.login(username.text, password.text, captcha.text)
+        if !login
+          p star.login_error
+        end
+        while !download_enough?
+          star.songs.each do |song|
+            if !$downloaded_song.include?(song.sid) && !download_enough?
+              puts "Downloading 《#{song.title} - #{song.artist}》..."
+              song.save_to(@save_path)
+              $downloaded_song << song.sid
+            end
           end
         end
-      end
 
-      puts "Downloaded #{$downloaded_song.count} songs."
+        puts "Downloaded #{$downloaded_song.count} songs."
+      end
     end
+
   end
+
 end
 
 def download_captcha(url)
