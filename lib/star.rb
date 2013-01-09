@@ -41,7 +41,8 @@ class Star
         :pt => "3.1",
         :channel => "-3",
         :from => "mainsite",
-        :r => "567fd78b89"
+        :r => "567fd78b89",
+        :kbps => 192
       }
     end
 
